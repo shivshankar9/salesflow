@@ -1,7 +1,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, Users, TrendingUp, DollarSign, CheckSquare, LogOut, CreditCard, Plug } from 'lucide-react';
+import { LayoutDashboard, Users, TrendingUp, DollarSign, CheckSquare, LogOut, CreditCard, Plug, Shield } from 'lucide-react';
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -13,14 +13,18 @@ export default function Layout() {
   };
 
   const navItems = [
-    { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/contacts', icon: Users, label: 'Contacts' },
-    { path: '/leads', icon: TrendingUp, label: 'Leads' },
-    { path: '/deals', icon: DollarSign, label: 'Deals' },
-    { path: '/activities', icon: CheckSquare, label: 'Activities' },
-    { path: '/subscriptions', icon: CreditCard, label: 'Subscriptions' },
-    { path: '/integrations', icon: Plug, label: 'Integrations' },
+    { path: '/app', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/app/contacts', icon: Users, label: 'Contacts' },
+    { path: '/app/leads', icon: TrendingUp, label: 'Leads' },
+    { path: '/app/deals', icon: DollarSign, label: 'Deals' },
+    { path: '/app/activities', icon: CheckSquare, label: 'Activities' },
+    { path: '/app/subscriptions', icon: CreditCard, label: 'Subscriptions' },
+    { path: '/app/integrations', icon: Plug, label: 'Integrations' },
   ];
+
+  if (user?.role === 'admin') {
+    navItems.push({ path: '/app/users', icon: Shield, label: 'Users' });
+  }
 
   return (
     <div className="flex h-screen bg-[#F9FAFB]">

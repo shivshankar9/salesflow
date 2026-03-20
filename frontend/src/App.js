@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
+import LandingPage from "@/pages/LandingPage";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Contacts from "@/pages/Contacts";
@@ -8,6 +9,7 @@ import Deals from "@/pages/Deals";
 import Activities from "@/pages/Activities";
 import Subscriptions from "@/pages/Subscriptions";
 import Integrations from "@/pages/Integrations";
+import UserManagement from "@/pages/UserManagement";
 import Layout from "@/components/Layout";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
@@ -21,9 +23,10 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route
-            path="/"
+            path="/app"
             element={
               <PrivateRoute>
                 <Layout />
@@ -37,6 +40,7 @@ function App() {
             <Route path="activities" element={<Activities />} />
             <Route path="subscriptions" element={<Subscriptions />} />
             <Route path="integrations" element={<Integrations />} />
+            <Route path="users" element={<UserManagement />} />
           </Route>
         </Routes>
         <Toaster />

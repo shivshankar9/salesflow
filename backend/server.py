@@ -219,6 +219,95 @@ async def get_me(current_user: dict = Depends(get_current_user)):
     }
 
 @api_router.post("/contacts", response_model=Contact)
+
+
+# User Management Endpoints (Admin only)
+async def require_admin(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return current_user
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+    role: str = "sales_rep"
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    password: Optional[str] = None
+    role: Optional[str] = None
+
+@api_router.get("/users", response_model=List[User])
+async def get_all_users(admin: dict = Depends(require_admin)):
+    users = await db.users.find({}, {"_id": 0, "password": 0}).to_list(1000)
+    return [User(**u) for u in users]
+
+@api_router.post("/users/create")
+async def create_user(user_data: UserCreate, admin: dict = Depends(require_admin)):
+    existing = await db.users.find_one({"email": user_data.email}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    user_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    user_doc = {
+        "id": user_id,
+        "email": user_data.email,
+        "password": hash_password(user_data.password),
+        "name": user_data.name,
+        "role": user_data.role,
+        "created_at": now
+    }
+    
+    await db.users.insert_one(user_doc)
+    
+    return {
+        "id": user_id,
+        "email": user_data.email,
+        "name": user_data.name,
+        "role": user_data.role,
+        "created_at": now
+    }
+
+@api_router.put("/users/{user_id}")
+async def update_user(user_id: str, user_data: UserUpdate, admin: dict = Depends(require_admin)):
+    update_fields = {}
+    
+    if user_data.name:
+        update_fields["name"] = user_data.name
+    if user_data.password:
+        update_fields["password"] = hash_password(user_data.password)
+    if user_data.role:
+        update_fields["role"] = user_data.role
+    
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    result = await db.users.update_one(
+        {"id": user_id},
+        {"$set": update_fields}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0})
+    return user
+
+@api_router.delete("/users/{user_id}")
+async def delete_user(user_id: str, admin: dict = Depends(require_admin)):
+    if user_id == admin["id"]:
+        raise HTTPException(status_code=400, detail="Cannot delete your own account")
+    
+    result = await db.users.delete_one({"id": user_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"message": "User deleted successfully"}
+
 async def create_contact(contact_data: ContactCreate, current_user: dict = Depends(get_current_user)):
     contact_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()

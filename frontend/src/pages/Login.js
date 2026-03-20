@@ -27,7 +27,7 @@ export default function Login() {
       const response = await api.post(endpoint, payload);
       login(response.data.token, response.data.user);
       toast.success(isLogin ? 'Logged in successfully!' : 'Account created successfully!');
-      navigate('/');
+      navigate('/app');
     } catch (error) {
       toast.error(error.response?.data?.detail || 'An error occurred');
     } finally {
