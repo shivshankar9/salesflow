@@ -1,0 +1,173 @@
+{
+  "project_name": "SalesFlow CRM",
+  "design_philosophy": {
+    "identity": "The Performance Pro",
+    "core_principles": [
+      "Density without Clutter - Sales needs information fast.",
+      "Linear & Modular - Inspired by Linear.app.",
+      "High Contrast - Black text on white, no gray-on-gray legibility issues.",
+      "Energy - Use Orange/Red accents to drive action, not calm Blue."
+    ],
+    "mood": "Professional, aggressive, efficient, crisp."
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Work Sans, sans-serif",
+      "body": "Inter, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "scale": {
+      "h1": "text-4xl font-semibold tracking-tight",
+      "h2": "text-3xl font-medium tracking-tight",
+      "h3": "text-2xl font-medium",
+      "h4": "text-xl font-medium",
+      "body": "text-sm leading-relaxed",
+      "caption": "text-xs text-muted-foreground",
+      "mono": "text-xs font-mono"
+    },
+    "rules": [
+      "Never use Inter for H1/H2 headings.",
+      "Use 'tracking-tight' for all headings above 20px.",
+      "Use 'leading-none' for headings.",
+      "Body text should never be smaller than 13px (0.8125rem) for readability."
+    ]
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "name": "Deep Obsidian",
+        "hex": "#09090b",
+        "hsl": "240 5.9% 10%"
+      },
+      "background": {
+        "name": "Pure White",
+        "hex": "#FFFFFF",
+        "hsl": "0 0% 100%"
+      },
+      "surface": {
+        "name": "Off White",
+        "hex": "#F9FAFB",
+        "hsl": "210 40% 98%"
+      },
+      "accent": {
+        "name": "Electric Blaze",
+        "hex": "#F97316",
+        "hsl": "24.6 95% 53.1%",
+        "usage": "CTAs, Active States, Key Metrics"
+      },
+      "muted": {
+        "name": "Mist",
+        "hex": "#F3F4F6",
+        "hsl": "210 40% 96.1%"
+      },
+      "border": {
+        "name": "Crisp Gray",
+        "hex": "#E5E7EB",
+        "hsl": "220 13% 91%"
+      },
+      "danger": {
+        "name": "Signal Red",
+        "hex": "#EF4444",
+        "hsl": "0 84.2% 60.2%"
+      }
+    },
+    "theme_setup": {
+      "mode": "light",
+      "instructions": "Update src/index.css :root variables with the HSL values provided above. Ensure high contrast. Do not use dark mode by default for this dashboard unless toggled."
+    }
+  },
+  "layout": {
+    "grid_system": "Bento Grid Mode B (High Density)",
+    "spacing": {
+      "container_padding": "p-6 md:p-8",
+      "gap": "gap-4 md:gap-6",
+      "card_padding": "p-5"
+    },
+    "structure": {
+      "sidebar": "Fixed width (240px), collapsible, dark or high-contrast border.",
+      "header": "Sticky, glassmorphism (white/80), bottom border.",
+      "main_content": "Max-width 1600px, centered if screen is huge, otherwise fluid."
+    },
+    "dashboard_grid": {
+      "columns": "grid-cols-1 md:grid-cols-4",
+      "widgets": {
+        "summary": "col-span-1 row-span-1",
+        "main_chart": "col-span-2 row-span-2 md:col-span-3",
+        "list": "col-span-1 row-span-2"
+      }
+    }
+  },
+  "components": {
+    "cards": {
+      "style": "Flat, 1px border-gray-200, bg-white. No shadow by default. Hover: border-orange-500/50 transition-colors.",
+      "radius": "rounded-lg"
+    },
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-none rounded-md px-4 py-2 font-medium text-sm",
+      "secondary": "bg-white border border-input hover:bg-accent hover:text-accent-foreground shadow-sm rounded-md",
+      "accent": "bg-orange-500 text-white hover:bg-orange-600 rounded-md"
+    },
+    "inputs": {
+      "style": "h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-orange-500"
+    },
+    "tables": {
+      "style": "Compact density. Header: bg-muted/50 text-muted-foreground font-medium. Rows: hover:bg-muted/50 transition-colors. Border-b only."
+    },
+    "charts": {
+      "library": "Recharts (via Shadcn Charts)",
+      "palette": ["#F97316", "#09090B", "#64748B", "#E2E8F0"]
+    }
+  },
+  "assets": {
+    "image_urls": {
+      "user_avatar": "https://images.unsplash.com/photo-1762522927402-f390672558d8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzV8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBjb3Jwb3JhdGUlMjBoZWFkc2hvdCUyMHBvcnRyYWl0fGVufDB8fHx8MTc3NDAyOTE1NHww&ixlib=rb-4.1.0&q=85",
+      "login_background": "https://images.unsplash.com/photo-1705909773171-4ba952b9c0af?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBtaW5pbWFsJTIwb2ZmaWNlJTIwaW50ZXJpb3IlMjBhcmNoaXRlY3R1cmV8ZW58MHx8fHwxNzc0MDI5MTU2fDA&ixlib=rb-4.1.0&q=85",
+      "empty_state": "https://images.unsplash.com/photo-1761481755390-83999d790b95?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTN8MHwxfHNlYXJjaHwyfHxtaW5pbWFsJTIwYWJzdHJhY3QlMjBnZW9tZXRyaWMlMjBzaGFwZSUyMHdoaXRlJTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3NzQwMjkxNTV8MA&ixlib=rb-4.1.0&q=85",
+      "contact_avatars": [
+        "https://images.unsplash.com/photo-1769636929261-e913ed023c83?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "https://images.unsplash.com/photo-1771898343647-bd979ad8cca5?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "https://images.pexels.com/photos/4057039/pexels-photo-4057039.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+      ]
+    },
+    "icons": {
+      "library": "lucide-react",
+      "style": "Stroke width 1.5px (Thin/Elegant) or 2px (Bold/Clear). Consistent sizing (w-4 h-4 for UI, w-5 h-5 for Nav)."
+    }
+  },
+  "instructions_to_main_agent": [
+    "Install 'lucide-react' and 'recharts' if not present.",
+    "Install 'clsx' and 'tailwind-merge' for class handling.",
+    "Update 'tailwind.config.js' to extend colors with the provided palette (accent: orange-500).",
+    "In 'src/index.css', replace root variables with the HSL values.",
+    "Create a 'Layout' component that includes the Sidebar and Header.",
+    "Use 'Outlet' from react-router-dom for nested routing.",
+    "Implement the Dashboard with the Bento Grid layout.",
+    "Ensure all interactive elements have hover states (opacity-80 or bg-accent/10).",
+    "Use 'sonner' for toast notifications."
+  ],
+  "universal_guidelines": {
+    "general": [
+      "Avoid 'AI Slop' - no generic gradients, no centered layouts.",
+      "Dark colors look good when used independently without gradients.",
+      "Create depth through layered design elements (z-index) and subtle borders.",
+      "Use glass-morphism effects with backdrop filters (12-24px blur) for headers/overlays.",
+      "DO NOT apply 'transition: all'. Animate specific properties (transform, opacity, colors).",
+      "DO NOT center align the app container. No '.App { text-align: center; }'.",
+      "Use modern button styles (pill or sharp rounded-md) with interaction animations.",
+      "NEVER use AI assistant emojis (🤖, 🧠, etc) as icons. Use Lucide icons.",
+      "Use 2-3x more spacing than feels comfortable (p-6, p-8).",
+      "Subtle grain textures or noise overlays can add premium feel."
+    ],
+    "components": [
+      "Prioritize using pre-existing Shadcn components from 'src/components/ui'.",
+      "Customize them to match the 'The Performance Pro' identity (sharper, denser).",
+      "Export components as named exports.",
+      "Pages must use default exports."
+    ],
+    "accessibility": [
+      "Ensure contrast ratios meet WCAG AA (4.5:1 for text).",
+      "Interactive elements must have 'data-testid' attributes.",
+      "Focus states must be visible (ring-2 ring-orange-500)."
+    ]
+  }
+}
