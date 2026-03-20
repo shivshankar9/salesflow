@@ -1,7 +1,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, Users, TrendingUp, DollarSign, CheckSquare, LogOut, CreditCard, Plug, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, TrendingUp, DollarSign, CheckSquare, LogOut, CreditCard, Plug, Shield, FileText } from 'lucide-react';
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -18,6 +18,7 @@ export default function Layout() {
     { path: '/app/leads', icon: TrendingUp, label: 'Leads' },
     { path: '/app/deals', icon: DollarSign, label: 'Deals' },
     { path: '/app/activities', icon: CheckSquare, label: 'Activities' },
+    { path: '/app/invoices', icon: FileText, label: 'GST Invoices', badge: 'India' },
     { path: '/app/subscriptions', icon: CreditCard, label: 'Subscriptions' },
     { path: '/app/integrations', icon: Plug, label: 'Integrations' },
   ];
@@ -38,7 +39,7 @@ export default function Layout() {
             <NavLink
               key={item.path}
               to={item.path}
-              end={item.path === '/'}
+              end={item.path === '/app'}
               data-testid={`nav-${item.label.toLowerCase()}`}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -49,7 +50,12 @@ export default function Layout() {
               }
             >
               <item.icon className="w-5 h-5" />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {item.badge && (
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                  {item.badge}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>

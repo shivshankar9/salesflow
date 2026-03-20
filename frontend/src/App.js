@@ -10,6 +10,7 @@ import Activities from "@/pages/Activities";
 import Subscriptions from "@/pages/Subscriptions";
 import Integrations from "@/pages/Integrations";
 import UserManagement from "@/pages/UserManagement";
+import IndianInvoices from "@/pages/IndianInvoices";
 import Layout from "@/components/Layout";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
@@ -40,6 +41,7 @@ function App() {
             <Route path="activities" element={<Activities />} />
             <Route path="subscriptions" element={<Subscriptions />} />
             <Route path="integrations" element={<Integrations />} />
+            <Route path="invoices" element={<IndianInvoices />} />
             <Route path="users" element={<UserManagement />} />
           </Route>
         </Routes>

@@ -303,6 +303,136 @@ async def delete_user(user_id: str, admin: dict = Depends(require_admin)):
     
     result = await db.users.delete_one({"id": user_id})
     
+
+
+# Indian Market Features
+from services.indian_market_service import (
+    generate_invoice_number, calculate_gst, validate_gstin, validate_pan,
+    INDIAN_STATES, BUSINESS_TYPES, Invoice, InvoiceItem
+)
+
+@api_router.get("/indian/states")
+async def get_indian_states():
+    return {"states": INDIAN_STATES}
+
+@api_router.get("/indian/business-types")
+async def get_business_types():
+    return {"business_types": BUSINESS_TYPES}
+
+@api_router.post("/indian/validate-gstin")
+async def validate_gstin_endpoint(gstin: str):
+    is_valid = validate_gstin(gstin)
+    return {"gstin": gstin, "valid": is_valid}
+
+@api_router.post("/indian/validate-pan")
+async def validate_pan_endpoint(pan: str):
+    is_valid = validate_pan(pan)
+    return {"pan": pan, "valid": is_valid}
+
+@api_router.post("/indian/invoices")
+async def create_invoice(
+    customer_name: str,
+    customer_address: str,
+    customer_state: str,
+    items: List[dict],
+    customer_gstin: Optional[str] = None,
+    notes: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    invoice_number = generate_invoice_number()
+    now = datetime.now(timezone.utc).isoformat()
+    
+    subtotal = sum(item['quantity'] * item['rate'] for item in items)
+    gst_calc = calculate_gst(subtotal)
+    
+    invoice_doc = {
+        "id": str(uuid.uuid4()),
+        "invoice_number": invoice_number,
+        "invoice_date": now,
+        "customer_name": customer_name,
+        "customer_gstin": customer_gstin,
+        "customer_address": customer_address,
+        "customer_state": customer_state,
+        "items": items,
+        "subtotal": subtotal,
+        "cgst_amount": gst_calc['cgst'],
+        "sgst_amount": gst_calc['sgst'],
+        "igst_amount": gst_calc['igst'],
+        "gst_amount": gst_calc['cgst'] + gst_calc['sgst'] + gst_calc['igst'],
+        "total_amount": gst_calc['total'],
+        "notes": notes,
+        "created_by": current_user["id"],
+        "created_at": now
+    }
+    
+    await db.invoices.insert_one(invoice_doc)
+    
+    return {
+        "id": invoice_doc["id"],
+        "invoice_number": invoice_number,
+        "total_amount": gst_calc['total']
+    }
+
+@api_router.get("/indian/invoices")
+async def get_invoices(current_user: dict = Depends(get_current_user)):
+    invoices = await db.invoices.find(
+        {"created_by": current_user["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(1000)
+    return invoices
+
+@api_router.get("/indian/invoices/{invoice_id}")
+async def get_invoice(invoice_id: str, current_user: dict = Depends(get_current_user)):
+    invoice = await db.invoices.find_one(
+        {"id": invoice_id, "created_by": current_user["id"]},
+        {"_id": 0}
+    )
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    return invoice
+
+# Update contacts to include Indian fields
+class IndianContactCreate(BaseModel):
+    name: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    company: Optional[str] = None
+    position: Optional[str] = None
+    status: Optional[str] = "active"
+    gstin: Optional[str] = None
+    pan: Optional[str] = None
+    state: Optional[str] = None
+    city: Optional[str] = None
+    pincode: Optional[str] = None
+
+@api_router.post("/contacts/indian", response_model=Contact)
+async def create_indian_contact(contact_data: IndianContactCreate, current_user: dict = Depends(get_current_user)):
+    contact_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    contact_doc = {
+        "id": contact_id,
+        **contact_data.model_dump(),
+        "created_by": current_user["id"],
+        "created_at": now,
+        "updated_at": now
+    }
+    
+    await db.contacts.insert_one(contact_doc)
+    return Contact(**contact_doc)
+
+# Indian pricing tiers (in INR)
+INDIAN_PRICING = {
+    'free': {'name': 'Free', 'price_inr': 0, 'price_usd': 0, 'features': ['5 contacts', '2 leads', 'Basic dashboard', 'Email support']},
+    'startup': {'name': 'Startup', 'price_inr': 499, 'price_usd': 6, 'features': ['100 contacts', '50 leads', 'GST invoices', 'WhatsApp integration', 'Basic AI', 'Email support']},
+    'business': {'name': 'Business', 'price_inr': 1499, 'price_usd': 18, 'features': ['Unlimited contacts', 'Unlimited leads', 'All integrations', 'Advanced AI', 'Bulk WhatsApp', 'Priority support', 'Team collaboration']},
+    'enterprise': {'name': 'Enterprise', 'price_inr': 4999, 'price_usd': 60, 'features': ['Everything in Business', 'Custom integrations', 'Dedicated support', 'Custom branding', 'API access', 'On-premise option']},
+}
+
+@api_router.get("/subscriptions/plans/indian")
+async def get_indian_pricing():
+    return {"plans": INDIAN_PRICING, "currency": "INR"}
+
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="User not found")
     
