@@ -6,6 +6,8 @@ import Contacts from "@/pages/Contacts";
 import Leads from "@/pages/Leads";
 import Deals from "@/pages/Deals";
 import Activities from "@/pages/Activities";
+import Subscriptions from "@/pages/Subscriptions";
+import Integrations from "@/pages/Integrations";
 import Layout from "@/components/Layout";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
@@ -33,6 +35,8 @@ function App() {
             <Route path="leads" element={<Leads />} />
             <Route path="deals" element={<Deals />} />
             <Route path="activities" element={<Activities />} />
+            <Route path="subscriptions" element={<Subscriptions />} />
+            <Route path="integrations" element={<Integrations />} />
           </Route>
         </Routes>
         <Toaster />

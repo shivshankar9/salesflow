@@ -459,3 +459,169 @@ logger = logging.getLogger(__name__)
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+
+# Import services
+from services.ai_service import generate_email_draft, analyze_sentiment, score_lead, summarize_interaction
+from services.communication_service import send_sms, send_whatsapp, send_email
+from services.payment_service import get_plans, create_stripe_customer, create_stripe_subscription, create_razorpay_order
+
+# Subscription Plans Endpoints
+@api_router.get("/subscriptions/plans")
+async def get_subscription_plans():
+    return {"plans": get_plans()}
+
+@api_router.post("/subscriptions/subscribe")
+async def subscribe_to_plan(plan: str, payment_provider: str = "stripe", current_user: dict = Depends(get_current_user)):
+    user_id = current_user["id"]
+    email = current_user["email"]
+    
+    if payment_provider == "stripe":
+        customer = create_stripe_customer(email)
+        subscription = create_stripe_subscription(customer['id'], plan)
+        
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {
+                "subscription_plan": plan,
+                "subscription_id": subscription['subscription_id'],
+                "subscription_status": subscription['status']
+            }}
+        )
+        
+        return {"status": "success", "subscription": subscription, "plan": plan}
+    elif payment_provider == "razorpay":
+        plan_data = get_plans()[plan]
+        order = create_razorpay_order(plan_data['price'])
+        return {"status": "pending", "order": order, "plan": plan}
+    else:
+        raise HTTPException(status_code=400, detail="Invalid payment provider")
+
+# AI Features Endpoints
+@api_router.post("/ai/generate-email")
+async def generate_email(recipient_name: str, context: str, current_user: dict = Depends(get_current_user)):
+    draft = generate_email_draft(recipient_name, context)
+    return {"email_draft": draft}
+
+@api_router.post("/ai/analyze-sentiment")
+async def analyze_text_sentiment(text: str, current_user: dict = Depends(get_current_user)):
+    sentiment = analyze_sentiment(text)
+    return {"sentiment": sentiment, "text": text}
+
+@api_router.post("/ai/score-lead/{lead_id}")
+async def score_lead_ai(lead_id: str, current_user: dict = Depends(get_current_user)):
+    lead = await db.leads.find_one({"id": lead_id, "created_by": current_user["id"]}, {"_id": 0})
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    
+    score = score_lead(lead)
+    
+    await db.leads.update_one(
+        {"id": lead_id},
+        {"$set": {"ai_score": score}}
+    )
+    
+    return {"lead_id": lead_id, "score": score}
+
+@api_router.post("/ai/summarize")
+async def summarize_text(text: str, current_user: dict = Depends(get_current_user)):
+    summary = summarize_interaction(text)
+    return {"summary": summary}
+
+# Communication Endpoints
+@api_router.post("/communication/sms")
+async def send_sms_message(to_number: str, message: str, current_user: dict = Depends(get_current_user)):
+    result = send_sms(to_number, message)
+    
+    activity_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    await db.activities.insert_one({
+        "id": activity_id,
+        "title": f"SMS to {to_number}",
+        "description": message,
+        "activity_type": "sms",
+        "created_by": current_user["id"],
+        "created_at": now,
+        "updated_at": now,
+        "completed": True
+    })
+    
+    return result
+
+@api_router.post("/communication/whatsapp")
+async def send_whatsapp_message(to_number: str, message: str, current_user: dict = Depends(get_current_user)):
+    result = send_whatsapp(to_number, message)
+    
+    activity_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    await db.activities.insert_one({
+        "id": activity_id,
+        "title": f"WhatsApp to {to_number}",
+        "description": message,
+        "activity_type": "whatsapp",
+        "created_by": current_user["id"],
+        "created_at": now,
+        "updated_at": now,
+        "completed": True
+    })
+    
+    return result
+
+@api_router.post("/communication/email")
+async def send_email_message(to_email: str, subject: str, html_content: str, current_user: dict = Depends(get_current_user)):
+    result = send_email(to_email, subject, html_content)
+    
+    activity_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    await db.activities.insert_one({
+        "id": activity_id,
+        "title": f"Email to {to_email}: {subject}",
+        "description": html_content[:200],
+        "activity_type": "email",
+        "created_by": current_user["id"],
+        "created_at": now,
+        "updated_at": now,
+        "completed": True
+    })
+    
+    return result
+
+# Integration Settings
+@api_router.get("/integrations/status")
+async def get_integrations_status(current_user: dict = Depends(get_current_user)):
+    return {
+        "twilio": {"enabled": os.environ.get('TWILIO_ACCOUNT_SID', 'demo') != 'demo'},
+        "sendgrid": {"enabled": os.environ.get('SENDGRID_API_KEY', 'demo') != 'demo'},
+        "stripe": {"enabled": os.environ.get('STRIPE_SECRET_KEY', 'sk_test_demo') != 'sk_test_demo'},
+        "razorpay": {"enabled": os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_demo') != 'rzp_test_demo'},
+        "openai": {"enabled": os.environ.get('OPENAI_API_KEY', 'demo-key') != 'demo-key'}
+    }
+
+@api_router.get("/dashboard/ai-insights")
+async def get_ai_insights(current_user: dict = Depends(get_current_user)):
+    user_id = current_user["id"]
+    
+    leads = await db.leads.find({"created_by": user_id}, {"_id": 0}).to_list(100)
+    
+    high_score_leads = [l for l in leads if l.get("ai_score", 0) >= 70]
+    medium_score_leads = [l for l in leads if 40 <= l.get("ai_score", 0) < 70]
+    low_score_leads = [l for l in leads if l.get("ai_score", 0) < 40]
+    
+    recent_activities = await db.activities.find(
+        {"created_by": user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(10).to_list(10)
+    
+    communication_stats = {
+        "email": sum(1 for a in recent_activities if a.get("activity_type") == "email"),
+        "sms": sum(1 for a in recent_activities if a.get("activity_type") == "sms"),
+        "whatsapp": sum(1 for a in recent_activities if a.get("activity_type") == "whatsapp"),
+    }
+    
+    return {
+        "high_value_leads": len(high_score_leads),
+        "medium_value_leads": len(medium_score_leads),
+        "low_value_leads": len(low_score_leads),
+        "communication_stats": communication_stats,
+        "top_leads": high_score_leads[:5]
+    }

@@ -1,7 +1,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, Users, TrendingUp, DollarSign, CheckSquare, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, TrendingUp, DollarSign, CheckSquare, LogOut, CreditCard, Plug } from 'lucide-react';
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -18,6 +18,8 @@ export default function Layout() {
     { path: '/leads', icon: TrendingUp, label: 'Leads' },
     { path: '/deals', icon: DollarSign, label: 'Deals' },
     { path: '/activities', icon: CheckSquare, label: 'Activities' },
+    { path: '/subscriptions', icon: CreditCard, label: 'Subscriptions' },
+    { path: '/integrations', icon: Plug, label: 'Integrations' },
   ];
 
   return (
