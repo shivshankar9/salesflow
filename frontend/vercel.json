@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "rootDirectory": "frontend",
   "buildCommand": "yarn install && yarn build",
   "outputDirectory": "build",
   "rewrites": [
